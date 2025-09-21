@@ -22,10 +22,10 @@ struct MainAppView: View {
                 .tag(0)
             
             // Health Tab
-            HealthView()
+            MealView()
                 .tabItem {
                     Image(systemName: selectedTab == 1 ? "heart.fill" : "heart")
-                    Text("Health")
+                    Text("Meal")
                 }
                 .tag(1)
             
