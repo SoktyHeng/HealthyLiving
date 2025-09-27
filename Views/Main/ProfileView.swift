@@ -10,6 +10,7 @@ import FirebaseAuth
 
 struct ProfileView: View {
     @State private var showingSignOutAlert = false
+    @State private var showingMealHistory = false
     @EnvironmentObject var userManager: UserManager
     
     var body: some View {
@@ -83,7 +84,9 @@ struct ProfileView: View {
                             // TODO: Navigate to edit profile
                         })
                         ProfileOptionRow(icon: "gear", title: "Settings", action: {})
-                        ProfileOptionRow(icon: "bell", title: "Notifications", action: {})
+                        ProfileOptionRow(icon: "clock.arrow.circlepath", title: "Meal History", action: {
+                            showingMealHistory = true
+                        })
                         ProfileOptionRow(icon: "questionmark.circle", title: "Help & Support", action: {})
                         ProfileOptionRow(icon: "info.circle", title: "About", action: {})
                     }
@@ -106,6 +109,9 @@ struct ProfileView: View {
                 }
             }
             .navigationTitle("Profile")
+            .sheet(isPresented: $showingMealHistory) {
+                MealHistoryView()
+            }
             .alert("Sign Out", isPresented: $showingSignOutAlert) {
                 Button("Cancel", role: .cancel) {}
                 Button("Sign Out", role: .destructive) {

@@ -16,7 +16,7 @@ struct MealView: View {
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
+            VStack(spacing: 16) {
                 // Meal List
                 ScrollView {
                     LazyVStack(spacing: 12) {

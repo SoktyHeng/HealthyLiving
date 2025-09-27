@@ -2,74 +2,89 @@
 //  HomeView.swift
 //  HealthyLivingProject
 //
-//  Created by Sokty Heng on 19/9/25.
+//  Updated with HealthKit integration
 //
 
 import SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject var userManager: UserManager
+    @StateObject private var healthManager = HealthKitManager()
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 20) {
-                // Personalized Welcome Message
-                VStack(spacing: 8) {
-                    if let username = userManager.currentUser?.username {
-                        Text("Welcome back, \(username)!")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .multilineTextAlignment(.center)
-                    } else {
-                        Text("Welcome to Healthy Living!")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .multilineTextAlignment(.center)
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Personalized Welcome Message with Profile Picture
+                    HStack(spacing: 16) {
+                        // Profile Picture
+                        Circle()
+                            .fill(Color.blue.opacity(0.2))
+                            .frame(width: 60, height: 60)
+                            .overlay(
+                                Image(systemName: "person.fill")
+                                    .font(.system(size: 24))
+                                    .foregroundColor(.blue)
+                            )
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            if let username = userManager.currentUser?.username {
+                                Text("Welcome Back, \(username)")
+                                    .font(.title3)
+                                    .fontWeight(.semibold)
+                            } else {
+                                Text("Welcome Back")
+                                    .font(.title3)
+                                    .fontWeight(.semibold)
+                            }
+                            
+                            Text("Let's check your progress today")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Spacer()
                     }
+                    .padding(.horizontal)
+                    .padding(.top)
                     
-                    Text("Your journey to a healthier lifestyle starts here.")
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
+                    // Health Data Cards
+                    VStack(spacing: 16) {
+                        // Daily Steps Card
+                        HealthDataCard(
+                            title: "Daily Step Count",
+                            value: healthManager.isLoading ? "..." : "\(healthManager.stepCount)",
+                            subtitle: "Steps taken today",
+                            content: AnyView(
+                                WeeklyStepsChart(stepData: healthManager.weeklySteps)
+                            )
+                        )
+                        
+                        // Calories Burned Card
+                        HealthDataCard(
+                            title: "Calories Burned Today",
+                            value: healthManager.isLoading ? "..." : "\(healthManager.caloriesBurned)",
+                            subtitle: "Active calories burned",
+                            content: AnyView(
+                                CaloriesProgressChart(currentCalories: healthManager.caloriesBurned)
+                            )
+                        )
+                    }
+                    .padding(.horizontal)
                 }
-                .padding()
-                
-                Image(systemName: "heart.circle.fill")
-                    .font(.system(size: 80))
-                    .foregroundColor(.red)
-                
-                Spacer()
-                
-                // Quick Action Cards
-                VStack(spacing: 16) {
-                    QuickActionCard(
-                        icon: "drop.fill",
-                        title: "Log Water",
-                        subtitle: "Track your daily hydration",
-                        color: .blue
-                    )
-                    
-                    QuickActionCard(
-                        icon: "fork.knife",
-                        title: "Log Meal",
-                        subtitle: "Record what you've eaten",
-                        color: .green
-                    )
-                    
-                    QuickActionCard(
-                        icon: "figure.walk",
-                        title: "Start Exercise",
-                        subtitle: "Begin your workout session",
-                        color: .orange
-                    )
-                }
-                .padding(.horizontal)
-                
-                Spacer()
             }
-            .navigationTitle("Home")
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle("")
+            .navigationBarHidden(true)
+            .refreshable {
+                healthManager.fetchTodaysData()
+                healthManager.fetchWeeklySteps()
+            }
+            .onAppear {
+                if healthManager.isAuthorized {
+                    healthManager.fetchTodaysData()
+                    healthManager.fetchWeeklySteps()
+                }
+            }
         }
     }
 }
